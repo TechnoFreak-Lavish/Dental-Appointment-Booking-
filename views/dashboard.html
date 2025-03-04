@@ -106,73 +106,7 @@
         <div class="calendar" id="calendar"></div>
 
         <!-- Time Slots -->
-        <div id="timeSlotsContainer" style="display: none;">
-            <h5>Select Time Slot:</h5>
-            <div class="slots-container" id="slots"></div>
-        </div>
-
-        <!-- Confirm Button -->
-        <button id="confirmBtn" class="btn btn-primary mt-3">Confirm Appointment</button>
-    </div>
-
-    <!-- Scripts -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            let today = new Date();
-            let calendar = document.getElementById("calendar");
-
-            // Generate current month days
-            for (let i = 1; i <= 30; i++) {
-                let dayDiv = document.createElement("div");
-                dayDiv.classList.add("day");
-                dayDiv.innerText = i;
-
-                // Click event for date selection
-                dayDiv.addEventListener("click", function() {
-                    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
-                    dayDiv.classList.add("selected");
-                    generateTimeSlots();
-                });
-
-                calendar.appendChild(dayDiv);
-            }
-
-            function generateTimeSlots() {
-                let slotsContainer = document.getElementById("slots");
-                slotsContainer.innerHTML = "";
-                document.getElementById("timeSlotsContainer").style.display = "block";
-
-                let timeSlots = ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM",
-                                 "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", 
-                                 "05:00 PM", "05:30 PM", "06:00 PM"];
-
-                timeSlots.forEach(slot => {
-                    let slotDiv = document.createElement("div");
-                    slotDiv.classList.add("time-slot");
-                    slotDiv.innerText = slot;
-
-                    slotDiv.addEventListener("click", function() {
-                        document.querySelectorAll(".time-slot").forEach(s => s.classList.remove("selected"));
-                        slotDiv.classList.add("selected");
-                        document.getElementById("confirmBtn").style.display = "block";
-                    });
-
-                    slotsContainer.appendChild(slotDiv);
-                });
-            }
-
-            document.getElementById("confirmBtn").addEventListener("click", function() {
-                let selectedDate = document.querySelector(".day.selected")?.innerText;
-                let selectedTime = document.querySelector(".time-slot.selected")?.innerText;
-
-                if (!selectedDate || !selectedTime) {
-                    alert("Please select a date and time.");
-                    return;
-                }
-
-                alert(`Appointment Confirmed on ${selectedDate} at ${selectedTime}!`);
-            });
-        });
-    </script>
+       
+  
 </body>
 </html>
