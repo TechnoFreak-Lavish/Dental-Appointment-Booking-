@@ -6,6 +6,6 @@ import {registervalidate,loginvalidate} from '../middleware/validation.js'
 const router = express.Router();
 
 router.post('/register',registervalidate, register);
-router.post('/login', loginvalidate,login);
+router.post('/login',loginvalidate,login);
 
 export default router;
