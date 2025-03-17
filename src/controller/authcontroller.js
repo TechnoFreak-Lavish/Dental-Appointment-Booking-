@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import Patient from '../models/Patient.js';
+import Patient from '../infrastructure/mongodb/models/Patient.js';
 
 dotenv.config();
 
