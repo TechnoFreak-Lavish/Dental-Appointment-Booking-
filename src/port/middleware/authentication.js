@@ -1,28 +1,26 @@
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
 dotenv.config();
 
-const aunthtoken=(req,res,next)=>{
-
-
-    const authheader =req.header['Authorization'];
-    const token =authheader?.split(' ')[1] && authheader;
-
-    if(!token)
-    {
-        return res.sendStatus(401).json({message:'Token not provieded'});
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) {
+        return res.status(401).json({ message: "No token provided" });
     }
-        jwt.verify(token,process.env.JWT_SECRET,(err,user)=>{
-            if (err){
-                return res.sendStatus(403);
 
-            }
-        else
-        {
-            req.user =user;
-            next();
-        }
-});
-    
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Token format incorrect" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = { id: decoded.patientId };
+        next();
+    } catch (error) {
+        return res.status(403).json({ message: "Invalid token", error: error.message });
+    }
 };
-exports.aunthtoken =aunthtoken;
+
+export default authMiddleware;

@@ -1,8 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import connectDB from './infrastructure/mongodb/db.js';
+import connectDB from './infrastructure/db.js';
 import authRoutes from './port/routes/authRoutes.js';
+import appoinmentroutes from './port/routes/appointRoutes.js'
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 
-
+app.use("/api/appointments", appoinmentroutes);
 
 const PORT = process.env.PORT ;
 connectDB();
