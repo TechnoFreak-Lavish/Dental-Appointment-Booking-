@@ -1,6 +1,7 @@
 import express from  'express';
 import Appointment from "../../infrastructure/mongodb/models/Appointment.js";
 import authMiddleware from "../middleware/authentication.js";
+import Patient from "../../infrastructure/mongodb/models/Patient.js"
 
 const router = express.Router();
 
@@ -16,10 +17,24 @@ router.get("/slotsavailable/:date", async (req, res) => {
         res.status(500).json({ message: "Error fetching slots", error: err.message });
     }
 });
+router.get('/patientprofile', authMiddleware, async (req, res) => {
+    try {
+      const patientID = req.user.id;
+  
+      const patient = await Patient.findById(patientID).select('name email phone');
+      if (!patient) {
+        return res.status(404).json({ message: 'Patient not found' });
+      }
+  
+      res.status(200).json(patient);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch patient profile', error: error.message });
+    }
+  });
 
 router.post("/book", authMiddleware, async (req, res) => {
     try {
-        const { date, slot,name, email, phone, reason } = req.body;
+        const { date, slot,name, email, phone,clinic, reason } = req.body;
         const patientID = req.user.id;
 
         if (!date || !slot) {
@@ -31,7 +46,7 @@ router.post("/book", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "This time slot is already booked!" });
         }
 
-        const newAppointment = new Appointment({ patientID, date, slot,name, email, phone, reason });
+        const newAppointment = new Appointment({ patientID, date, slot,name, email, phone,clinic, reason });
         await newAppointment.save();
 
         res.status(201).json({ message: "Appointment booked successfully", appointment: newAppointment });

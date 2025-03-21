@@ -17,8 +17,10 @@ const SchemaAppoinment = new mongoose.Schema({
     appoinmentstatus: {
         type: String, defafult: "Booked",
         emun: ["Booked", "Cancelled", "Completed"]
+    },
+    clinic :{
+type :String
     }
-
 });
 
 const Appointment = mongoose.model("Appoinment", SchemaAppoinment);
