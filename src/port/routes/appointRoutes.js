@@ -19,7 +19,7 @@ router.get("/slotsavailable/:date", async (req, res) => {
 
 router.post("/book", authMiddleware, async (req, res) => {
     try {
-        const { date, slot } = req.body;
+        const { date, slot,name, email, phone, reason } = req.body;
         const patientID = req.user.id;
 
         if (!date || !slot) {
@@ -31,7 +31,7 @@ router.post("/book", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "This time slot is already booked!" });
         }
 
-        const newAppointment = new Appointment({ patientID, date, slot });
+        const newAppointment = new Appointment({ patientID, date, slot,name, email, phone, reason });
         await newAppointment.save();
 
         res.status(201).json({ message: "Appointment booked successfully", appointment: newAppointment });
