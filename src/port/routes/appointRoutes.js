@@ -1,8 +1,10 @@
-import express from "express";
-import Appointment from "../../infrastructure/mongodb/models/Appointment.js";
-import authMiddleware from "../middleware/authentication.js";
-import Patient from "../../infrastructure/mongodb/models/Patient.js";
-import nodemailer from "nodemailer";
+
+const express = require("express");
+const Appointment = require("../../infrastructure/mongodb/models/Appointment");
+const authMiddleware = require("../middleware/authentication");
+const Patient = require("../../infrastructure/mongodb/models/Patient");
+const nodemailer = require("nodemailer");
+
 const router = express.Router();
 
 router.get("/slotsavailable/:date", async (req, res) => {
@@ -29,6 +31,7 @@ router.get("/slotsavailable/:date", async (req, res) => {
       .json({ message: "Error fetching slots", error: err.message });
   }
 });
+
 router.get("/patientprofile", authMiddleware, async (req, res) => {
   try {
     const patientID = req.user.id;
@@ -53,10 +56,9 @@ router.post("/book", authMiddleware, async (req, res) => {
     const { date, slot, name, email, phone, clinic, reason } = req.body;
     const patientID = req.user?.id;
 
-    console.log("📥 Incoming booking request:");
+    
     console.log({ patientID, date, slot, name, email, phone, clinic, reason });
 
-    // Basic Validation
     if (!date || !slot || !name || !email || !phone || !clinic) {
       return res.status(400).json({ message: "All fields are required!" });
     }
@@ -66,7 +68,7 @@ router.post("/book", authMiddleware, async (req, res) => {
     if (appointmentExists) {
       return res
         .status(400)
-        .json({ message: "This time slot is already booked!" });
+        .json({ message: "This slot time is already booked!" });
     }
 
     // Save new appointment
@@ -118,7 +120,7 @@ router.post("/book", authMiddleware, async (req, res) => {
       appointment: newAppointment,
     });
   } catch (err) {
-    console.error(" Error booking appointment:", err);
+    console.error("Error booking appointment:", err);
     res
       .status(500)
       .json({ message: "Error booking appointment", error: err.message });
@@ -136,4 +138,4 @@ router.get("/my-appointments", authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
