@@ -3,6 +3,7 @@ const express = require("express");
 const Appointment = require("../../infrastructure/mongodb/models/Appointment");
 const authMiddleware = require("../middleware/authentication");
 const Patient = require("../../infrastructure/mongodb/models/Patient");
+
 const nodemailer = require("nodemailer");
 
 const router = express.Router();
