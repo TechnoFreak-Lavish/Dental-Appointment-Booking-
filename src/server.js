@@ -1,9 +1,9 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import connectDB from './infrastructure/db.js';
-import authRoutes from './port/routes/authRoutes.js';
-import appoinmentroutes from './port/routes/appointRoutes.js'
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const connectDB = require('./infrastructure/db');
+const authRoutes = require('./port/routes/authRoutes');
+const appointmentRoutes = require('./port/routes/appointRoutes');
 
 dotenv.config();
 
@@ -12,12 +12,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 app.use('/api/auth', authRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
-app.use("/api/appointments", appoinmentroutes);
+const PORT = process.env.PORT || 5000;
 
-const PORT = process.env.PORT ;
 connectDB();
-app.listen(PORT, () => 
-    console.log(`Server running on port  ${PORT} `));
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

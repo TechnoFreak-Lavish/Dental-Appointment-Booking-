@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const SchemaAppoinment = new mongoose.Schema({
   patientID: {
@@ -9,7 +9,7 @@ const SchemaAppoinment = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   phone: { type: String, required: true },
-  reason: { type: String, required: false },
+  reason: { type: String },
   date: {
     type: Date,
     required: true,
@@ -20,14 +20,14 @@ const SchemaAppoinment = new mongoose.Schema({
   },
   appoinmentstatus: {
     type: String,
-    defafult: "Booked",
-    emun: ["Booked", "Cancelled", "Completed"],
+    default: "Booked", // ✅ Fixed typo
+    enum: ["Booked", "Cancelled", "Completed"], // ✅ Fixed typo
   },
   clinic: {
     type: String,
   },
 });
 
-const Appointment = mongoose.model("Appoinment", SchemaAppoinment);
+const Appointment = mongoose.model("Appointment", SchemaAppoinment);
 
-export default Appointment;
+module.exports = Appointment;
