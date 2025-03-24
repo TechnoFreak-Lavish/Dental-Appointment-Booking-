@@ -1,7 +1,10 @@
+
 const express = require("express");
 const Appointment = require("../../infrastructure/mongodb/models/Appointment");
 const authMiddleware = require("../middleware/authentication");
 const Patient = require("../../infrastructure/mongodb/models/Patient");
+
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
@@ -49,7 +52,6 @@ router.get("/patientprofile", authMiddleware, async (req, res) => {
     });
   }
 });
-
 router.post("/book", authMiddleware, async (req, res) => {
   try {
     const { date, slot, name, email, phone, clinic, reason } = req.body;
@@ -62,6 +64,7 @@ router.post("/book", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
+    // Check if slot is already booked
     const appointmentExists = await Appointment.findOne({ date, slot });
     if (appointmentExists) {
       return res
@@ -69,6 +72,7 @@ router.post("/book", authMiddleware, async (req, res) => {
         .json({ message: "This slot time is already booked!" });
     }
 
+    // Save new appointment
     const newAppointment = new Appointment({
       patientID,
       date,
@@ -81,10 +85,39 @@ router.post("/book", authMiddleware, async (req, res) => {
     });
 
     await newAppointment.save();
-
     console.log("Appointment saved:", newAppointment);
+
+    // Send Confirmation Email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail", // mail host which we have used 
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APPPASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Dental Clinic" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Appointment Confirmation",
+      html: `
+        <h3>Hi ${name},</h3>
+        <p>Your appointment has been <strong>confirmed</strong> with the following details:</p>
+        <ul>
+          <li><strong>Date:</strong> ${date}</li>
+          <li><strong>Time:</strong> ${slot}</li>
+          <li><strong>Clinic:</strong> ${clinic}</li>
+          <li><strong>Reason:</strong> ${reason || "N/A"}</li>
+        </ul>
+        <p>Thank you for booking with us!</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+   
+
     res.status(201).json({
-      message: "Appointment booked successfully",
+      message: "Appointment booked and confirmation email sent",
       appointment: newAppointment,
     });
   } catch (err) {
@@ -94,7 +127,6 @@ router.post("/book", authMiddleware, async (req, res) => {
       .json({ message: "Error booking appointment", error: err.message });
   }
 });
-
 router.get("/my-appointments", authMiddleware, async (req, res) => {
   try {
     const patientID = req.user.id;
