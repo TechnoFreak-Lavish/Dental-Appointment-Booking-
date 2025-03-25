@@ -1,5 +1,11 @@
 const request = require("supertest");
+const mongoose = require("mongoose");
 const app = require("../../server");
+
+afterAll(async () => {
+  // Gracefully close Mongo connection
+  await mongoose.connection.close();
+});
 
 describe("Auth Controller - Additional Tests", () => {
   it("should return 400 if trying to register with missing fields", async () => {
@@ -36,7 +42,6 @@ describe("Auth Controller - Additional Tests", () => {
   });
 
   it("should return 400 for login with wrong password", async () => {
-    // First register
     await request(app).post("/api/auth/register").send({
       name: "Login Test",
       email: "login@example.com",
@@ -44,7 +49,6 @@ describe("Auth Controller - Additional Tests", () => {
       password: "correctPassword"
     });
 
-    // Now try login with wrong password
     const res = await request(app).post("/api/auth/login").send({
       email: "login@example.com",
       password: "wrongPassword"
