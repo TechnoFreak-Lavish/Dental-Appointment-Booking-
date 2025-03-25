@@ -1,7 +1,9 @@
 const authController = require('../authcontroller');
 const Patient = require('../../infrastructure/mongodb/models/Patient');
+const bcrypt = require('bcryptjs');
 
 jest.mock('../../infrastructure/mongodb/models/Patient');
+jest.mock('bcryptjs');
 
 describe('Auth Controller - Additional Tests', () => {
   let req, res;
@@ -63,12 +65,10 @@ describe('Auth Controller - Additional Tests', () => {
 
     Patient.findOne.mockResolvedValue({
       email: 'found@example.com',
-      password: '$2a$10$mockedhash' // will mismatch with bcrypt
+      password: '$2a$10$mockedhash'
     });
 
-    // Mock bcrypt
-    const bcrypt = require('bcryptjs');
-    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+    bcrypt.compare.mockResolvedValue(false); // mock password mismatch
 
     await authController.login(req, res);
 
