@@ -1,7 +1,9 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
-const app = require("../../server");
+const http = require("http");
 
+const rawApp = require("../../server");
+const app = http.createServer(rawApp);
 afterAll(async () => {
   // Gracefully close Mongo connection
   await mongoose.connection.close();
