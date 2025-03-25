@@ -1,61 +1,78 @@
-const request = require("supertest");
-const mongoose = require("mongoose");
-const http = require("http");
+const authController = require('../authcontroller');
+const Patient = require('../../infrastructure/mongodb/models/Patient');
 
-const rawApp = require("../../server");
-const app = http.createServer(rawApp);
-afterAll(async () => {
-  // Gracefully close Mongo connection
-  await mongoose.connection.close();
-});
+jest.mock('../../infrastructure/mongodb/models/Patient');
 
-describe("Auth Controller - Additional Tests", () => {
-  it("should return 400 if trying to register with missing fields", async () => {
-    const res = await request(app).post("/api/auth/register").send({
-      email: "test@example.com"
-    });
-    expect(res.statusCode).toBe(400);
+describe('Auth Controller - Additional Tests', () => {
+  let req, res;
+
+  beforeEach(() => {
+    req = {
+      body: {}
+    };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    jest.clearAllMocks();
   });
 
-  it("should return 400 when registering with existing email", async () => {
-    await request(app).post("/api/auth/register").send({
-      name: "Test User",
-      email: "testduplicate@example.com",
-      phone: "1234567890",
-      password: "test123"
-    });
+  it('should return 400 if required fields are missing during registration', async () => {
+    req.body = { email: 'test@example.com' };
 
-    const res = await request(app).post("/api/auth/register").send({
-      name: "Test User",
-      email: "testduplicate@example.com",
-      phone: "1234567890",
-      password: "test123"
-    });
+    await authController.register(req, res);
 
-    expect([400, 409]).toContain(res.statusCode);
+    expect(res.status).toHaveBeenCalledWith(400);
   });
 
-  it("should return 404 for login with unregistered email", async () => {
-    const res = await request(app).post("/api/auth/login").send({
-      email: "nonexistent@example.com",
-      password: "any"
-    });
-    expect(res.statusCode).toBe(404);
+  it('should return 400 if user already exists', async () => {
+    req.body = {
+      name: 'Test',
+      email: 'existing@example.com',
+      phone: '1234567890',
+      password: 'password123'
+    };
+
+    Patient.findOne.mockResolvedValue({ email: 'existing@example.com' });
+
+    await authController.register(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ msg: 'Exist Account' });
   });
 
-  it("should return 400 for login with wrong password", async () => {
-    await request(app).post("/api/auth/register").send({
-      name: "Login Test",
-      email: "login@example.com",
-      phone: "9999999999",
-      password: "correctPassword"
+  it('should return 404 if login email is not found', async () => {
+    req.body = {
+      email: 'notfound@example.com',
+      password: 'any'
+    };
+
+    Patient.findOne.mockResolvedValue(null);
+
+    await authController.login(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ msg: 'Invalid Credentials' });
+  });
+
+  it('should return 400 if login password is incorrect', async () => {
+    req.body = {
+      email: 'found@example.com',
+      password: 'wrongpassword'
+    };
+
+    Patient.findOne.mockResolvedValue({
+      email: 'found@example.com',
+      password: '$2a$10$mockedhash' // will mismatch with bcrypt
     });
 
-    const res = await request(app).post("/api/auth/login").send({
-      email: "login@example.com",
-      password: "wrongPassword"
-    });
+    // Mock bcrypt
+    const bcrypt = require('bcryptjs');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
 
-    expect(res.statusCode).toBe(400);
+    await authController.login(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ msg: 'Invalid Password' });
   });
 });
