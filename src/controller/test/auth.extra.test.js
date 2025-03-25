@@ -37,7 +37,7 @@ describe('Auth Controller - Success Cases Only', () => {
 
     await authController.register(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalled();
   });
 
