@@ -42,7 +42,7 @@ describe('getMyAppointments', () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Error getting appointments' })
-    );
+  expect.objectContaining({ message: 'Error fetching appointments' })
+);
   });
 });
