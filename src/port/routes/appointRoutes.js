@@ -156,6 +156,7 @@ router.put('/appointments/:id', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "This slot is already taken." });
     }
 
+
     // Update the appointment if it belongs to the logged-in user
     const updated = await Appointment.findOneAndUpdate(
       { _id: id, patientID },
@@ -173,4 +174,27 @@ router.put('/appointments/:id', authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error updating appointment", error: err.message });
   }
 });
+
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const appointmentId = req.params.id;
+    const existingAppointment = await Appointment.findById(appointmentId);
+    if(!existingAppointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    // Check if the appointment belongs to the authenticated user
+    if (existingAppointment.patientID.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: "You are not allowed to delete this appointment." });
+    }
+    // Delete the appointment
+    await Appointment.deleteOne({_id: appointmentId});
+    res.sendStatus(204);
+  } catch (err) {
+    res
+        .status(500)
+        .json({ message: "Error deleting appointment", error: err.message });
+  }
+});
+
+
 module.exports = router;
