@@ -164,6 +164,7 @@ router.put('/appointments/:id', authMiddleware, async (req, res) => {
     );
 
     if (!updated) {
+      
       return res.status(404).json({ message: "Appointment not found or not yours" });
     }
 
