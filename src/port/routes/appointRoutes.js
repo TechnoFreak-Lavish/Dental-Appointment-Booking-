@@ -121,7 +121,7 @@ router.post("/book", authMiddleware, async (req, res) => {
           }
           .email-header {
             font-size: 22px;
-            color:rgb(97, 156, 215);
+            color:rgb(70, 124, 177);
             margin-bottom: 20px;
           }
           .email-details {
