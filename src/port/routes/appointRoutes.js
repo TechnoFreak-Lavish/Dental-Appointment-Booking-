@@ -52,6 +52,7 @@ router.get("/patientprofile", authMiddleware, async (req, res) => {
     });
   }
 });
+
 router.post("/book", authMiddleware, async (req, res) => {
   try {
     const { date, slot, name, email, phone, clinic, reason } = req.body;
@@ -138,6 +139,41 @@ router.get("/my-appointments", authMiddleware, async (req, res) => {
       .json({ message: "Error fetching appointments", error: err.message });
   }
 });
+// fatch the appointmnet to edit functionality 
+router.put('/appointments/:id', authMiddleware, async (req, res) => {
+  try {
+    const { date, slot } = req.body;
+    const { id } = req.params;
+    const patientID = req.user.id;
+
+    if (!date || !slot) {
+      return res.status(400).json({ message: "Date and slot are required" });
+    }
+
+    // Check if the new slot is already booked by someone else
+    const isSlotTaken = await Appointment.findOne({ date, slot, _id: { $ne: id } });
+    if (isSlotTaken) {
+      return res.status(400).json({ message: "This slot is already taken." });
+    }
+
+
+    // Update the appointment if it belongs to the logged-in user
+    const updated = await Appointment.findOneAndUpdate(
+      { _id: id, patientID },
+      { date, slot },
+      { new: true }
+    );
+
+    if (!updated) {
+      
+      return res.status(404).json({ message: "Appointment not found or not yours" });
+    }
+
+    res.status(200).json({ message: "Appointment rescheduled", appointment: updated });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating appointment", error: err.message });
+  }
+});
 
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
@@ -159,5 +195,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
         .json({ message: "Error deleting appointment", error: err.message });
   }
 });
+
 
 module.exports = router;
