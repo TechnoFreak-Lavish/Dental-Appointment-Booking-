@@ -3,8 +3,12 @@ const Appointment = require('../../infrastructure/mongodb/models/Appointment');
 
 jest.mock('../../infrastructure/mongodb/models/Appointment');
 
+jest.mock('../../utils/mailnoti', () => ({
+  sendStyledAppointmentEmail: jest.fn().mockResolvedValue(),
+}));
 describe('Booking Appointment', () => {
   let req, res;
+
 
   beforeEach(() => {
     req = {
@@ -33,7 +37,7 @@ describe('Booking Appointment', () => {
   it('should return 400 if any required fields are missing', async () => {
     req.body = { slot: '09:00 AM' }; 
 
-    await appointmentController.book(req, res);
+    await appointmentController.bookAppointment(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: "All fields are required!" });
@@ -42,21 +46,22 @@ describe('Booking Appointment', () => {
   it('should return 400 if the slot is already booked', async () => {
     Appointment.findOne.mockResolvedValue({ slot: '09:00 AM' });
 
-    await appointmentController.book(req, res);
+    await appointmentController.bookAppointment(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: "This time slot is already booked!" });
+    expect(res.json).toHaveBeenCalledWith({ message: "This slot time is already booked!" });
   });
 
   it('should return 201 and if  appointment  saved and still time slot is available', async () => {
     Appointment.findOne.mockResolvedValue(null);
     Appointment.prototype.save = jest.fn().mockResolvedValue({ _id: '12345' });
 
-    await appointmentController.book(req, res);
-
+    await appointmentController.bookAppointment(req, res);
+ 
+    
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      message: "Appointment booked successfully",
+      message: "Appointment booked and confirmation email sent",
       appointment: expect.any(Object),
     }));
   });

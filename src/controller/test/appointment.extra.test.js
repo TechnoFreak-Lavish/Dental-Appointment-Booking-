@@ -19,9 +19,9 @@ describe("Appointment Controller - Additional Tests", () => {
   });
 
   it("should return 400 if required fields are missing", async () => {
-    req.body = { date: "2025-03-25" }; // missing other fields
+    req.body = { date: "2025-03-25" }; 
 
-    await appointmentController.book(req, res);
+    await appointmentController.bookAppointment(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -42,11 +42,11 @@ describe("Appointment Controller - Additional Tests", () => {
 
     Appointment.findOne.mockResolvedValue({ slot: "09:00 AM" });
 
-    await appointmentController.book(req, res);
+    await appointmentController.bookAppointment(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      message: "This time slot is already booked!",
+      message: "This slot time is already booked!",
     });
   });
 
